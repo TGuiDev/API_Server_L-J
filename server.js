@@ -8,6 +8,7 @@ const { connectDB } = require('./config/database');
 
 // Importar middlewares
 const errorHandler = require('./middleware/errorHandler');
+const RateLimiter = require('./middleware/rateLimiter');
 
 // Importar rotas
 const healthRoutes = require('./routes/healthRoutes');
@@ -24,12 +25,20 @@ const aiRoutes = require('./ai/aiRoutes');
 // Inicializar Express
 const app = express();
 
-// Middleware CORS
+// Middleware CORS (compatível com Flutter, Web e Mobile)
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:3000',
+  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-JSON-Response-Time'],
+  maxAge: 86400,
 };
 app.use(cors(corsOptions));
+
+// Rate Limiter (100 requisições por 15 minutos)
+const rateLimiter = new RateLimiter(100, 15 * 60 * 1000);
+app.use(rateLimiter.middleware());
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -194,7 +203,7 @@ app.use(errorHandler);
 // ========================
 // INICIAR SERVIDOR
 // ========================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`\n${'='.repeat(50)}`);
