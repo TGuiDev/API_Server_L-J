@@ -4,8 +4,8 @@
   "description": "API Server para aplicativo e web app L&J",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node --no-deprecation server.js",
+    "dev": "nodemon --exec node --no-deprecation server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-api": "node test-api.js",
     "test-api-prod": "API_URL=https://seu-app.railway.app node test-api.js"
