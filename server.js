@@ -27,7 +27,8 @@ const app = express();
 
 // Middleware CORS (compatível com Flutter, Web e Mobile)
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
+  // origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
+  origin: process.env.CORS_ORIGIN || '*', // Permitir todas as origens (ajuste para produção)
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
