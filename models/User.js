@@ -92,6 +92,16 @@ const userSchema = new mongoose.Schema({
     default: true,
   },
 
+  // Reset de senha
+  codigoReset: {
+    type: String,
+    select: false,
+  },
+  expiracaoCodigoReset: {
+    type: Date,
+    select: false,
+  },
+
   // Timestamps
   criadoEm: {
     type: Date,
@@ -130,6 +140,44 @@ userSchema.methods.toJSON = function () {
   const usuarioObj = this.toObject();
   delete usuarioObj.senha;
   return usuarioObj;
+};
+
+// Método para gerar código de reset de senha
+userSchema.methods.gerarCodigoReset = function () {
+  // Gerar código de 6 dígitos
+  const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash do código para armazenar no banco
+  const codigoHash = require('crypto')
+    .createHash('sha256')
+    .update(codigo)
+    .digest('hex');
+
+  this.codigoReset = codigoHash;
+  // Expira em 15 minutos
+  this.expiracaoCodigoReset = Date.now() + 15 * 60 * 1000;
+
+  return codigo; // Retorna o código em texto puro para ser enviado
+};
+
+// Método para verificar se o código de reset é válido
+userSchema.methods.verificarCodigoReset = function (codigoFornecido) {
+  const crypto = require('crypto');
+  const codigoHash = crypto
+    .createHash('sha256')
+    .update(codigoFornecido)
+    .digest('hex');
+
+  const codigoValido = codigoHash === this.codigoReset;
+  const naoExpirou = this.expiracaoCodigoReset > Date.now();
+
+  return codigoValido && naoExpirou;
+};
+
+// Método para limpar código de reset
+userSchema.methods.limparCodigoReset = function () {
+  this.codigoReset = undefined;
+  this.expiracaoCodigoReset = undefined;
 };
 
 module.exports = mongoose.model('User', userSchema);

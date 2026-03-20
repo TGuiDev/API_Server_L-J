@@ -99,9 +99,127 @@ const logout = (req, res) => {
   });
 };
 
+// Solicitar redefinição de senha
+const requestPasswordReset = async (req, res) => {
+  const { emailOrPhone } = req.body;
+
+  if (!emailOrPhone) {
+    throw new ValidationError('Email ou telefone é obrigatório');
+  }
+
+  // Buscar usuário por email ou telefone
+  const usuario = await User.findOne({
+    $or: [
+      { email: emailOrPhone.toLowerCase() },
+      { telefone: emailOrPhone },
+    ],
+  });
+
+  if (!usuario) {
+    // Por segurança, não informamos se o usuário existe ou não
+    return res.status(200).json({
+      success: true,
+      message: 'Se o email ou telefone estiver cadastrado, você receberá um código de redefinição',
+    });
+  }
+
+  // Gerar código de reset
+  const codigoReset = usuario.gerarCodigoReset();
+  await usuario.save();
+
+  // TODO: Aqui você pode enviar o código via email ou SMS
+  // Por enquanto, logging para desenvolvimento
+  console.log(`Código de reset para ${emailOrPhone}: ${codigoReset}`);
+
+  return res.status(200).json({
+    success: true,
+    message: 'Código de redefinição enviado. Verifique seu email ou SMS.',
+    // Remover antes de ir para produção:
+    // _dev_code: codigoReset,
+  });
+};
+
+// Verificar código de reset
+const verifyResetCode = async (req, res) => {
+  const { emailOrPhone, code } = req.body;
+
+  if (!emailOrPhone || !code) {
+    throw new ValidationError('Email/telefone e código são obrigatórios');
+  }
+
+  // Buscar usuário
+  const usuario = await User.findOne({
+    $or: [
+      { email: emailOrPhone.toLowerCase() },
+      { telefone: emailOrPhone },
+    ],
+  }).select('+codigoReset +expiracaoCodigoReset');
+
+  if (!usuario) {
+    throw new ValidationError('Usuário não encontrado');
+  }
+
+  // Verificar código
+  if (!usuario.codigoReset || !usuario.verificarCodigoReset(code)) {
+    throw new ValidationError('Código inválido ou expirado');
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: 'Código verificado com sucesso',
+  });
+};
+
+// Redefinir senha
+const resetPassword = async (req, res) => {
+  const { emailOrPhone, code, newPassword, confirmPassword } = req.body;
+
+  if (!emailOrPhone || !code || !newPassword || !confirmPassword) {
+    throw new ValidationError('Todos os campos são obrigatórios');
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new ValidationError('As senhas não coincidem');
+  }
+
+  if (newPassword.length < 6) {
+    throw new ValidationError('Senha deve ter pelo menos 6 caracteres');
+  }
+
+  // Buscar usuário
+  const usuario = await User.findOne({
+    $or: [
+      { email: emailOrPhone.toLowerCase() },
+      { telefone: emailOrPhone },
+    ],
+  }).select('+codigoReset +expiracaoCodigoReset +senha');
+
+  if (!usuario) {
+    throw new ValidationError('Usuário não encontrado');
+  }
+
+  // Verificar código
+  if (!usuario.codigoReset || !usuario.verificarCodigoReset(code)) {
+    throw new ValidationError('Código inválido ou expirado');
+  }
+
+  // Atualizar senha
+  usuario.senha = newPassword;
+  usuario.limparCodigoReset();
+  await usuario.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Senha redefinida com sucesso',
+  });
+};
+
 module.exports = {
   register,
   login,
   getPerfil,
   logout,
+  requestPasswordReset,
+  verifyResetCode,
+  resetPassword,
 };
