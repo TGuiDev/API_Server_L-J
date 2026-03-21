@@ -105,11 +105,17 @@ const criar = async (req, res) => {
     throw new NotFoundError('Categoria não encontrada');
   }
 
+  // Se arquivo foi enviado, usar path; caso contrário, usar imagem de URL
+  let imagemData = imagem;
+  if (req.file) {
+    imagemData = req.file.imagePath; // /images/filename
+  }
+
   const produto = await Product.create({
     nome,
     descricao,
     preco,
-    imagem,
+    imagem: imagemData,
     categoria,
     subcategoria,
     ingredientes,
@@ -136,6 +142,11 @@ const atualizar = async (req, res) => {
     if (!cat) {
       throw new NotFoundError('Categoria não encontrada');
     }
+  }
+
+  // Se arquivo foi enviado, usar path
+  if (req.file) {
+    atualizacoes.imagem = req.file.imagePath;
   }
 
   const produto = await Product.findByIdAndUpdate(

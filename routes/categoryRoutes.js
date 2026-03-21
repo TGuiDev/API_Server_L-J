@@ -3,18 +3,19 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const validateRequest = require('../middleware/validateRequest');
 const authenticate = require('../middleware/authMiddleware');
+const { upload, processImagePath } = require('../middleware/uploadMiddleware');
 const Joi = require('joi');
 
 // Schema de validação - Criar categoria
 const criarCategoriaSchema = Joi.object({
   nome: Joi.string().min(3).required(),
   descricao: Joi.string(),
-  icone: Joi.string().uri(),
+  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
   subcategorias: Joi.array().items(
     Joi.object({
       nome: Joi.string().required(),
       descricao: Joi.string(),
-      icone: Joi.string().uri(),
+      icone: Joi.string().uri().optional(), // URL opcional
     })
   ),
 });
@@ -23,12 +24,12 @@ const criarCategoriaSchema = Joi.object({
 const atualizarCategoriaSchema = Joi.object({
   nome: Joi.string().min(3),
   descricao: Joi.string(),
-  icone: Joi.string().uri(),
+  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
   subcategorias: Joi.array().items(
     Joi.object({
       nome: Joi.string().required(),
       descricao: Joi.string(),
-      icone: Joi.string().uri(),
+      icone: Joi.string().uri().optional(), // URL opcional
     })
   ),
 }).min(1);
@@ -37,7 +38,7 @@ const atualizarCategoriaSchema = Joi.object({
 const adicionarSubcategoriaSchema = Joi.object({
   nome: Joi.string().min(3).required(),
   descricao: Joi.string(),
-  icone: Joi.string().uri(),
+  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
 });
 
 // Rotas públicas
@@ -59,6 +60,8 @@ router.post(
   '/',
   authenticate,
   adminOnly,
+  upload.single('icone'),
+  processImagePath,
   validateRequest(criarCategoriaSchema),
   categoryController.criar
 );
@@ -67,6 +70,8 @@ router.put(
   '/:id',
   authenticate,
   adminOnly,
+  upload.single('icone'),
+  processImagePath,
   validateRequest(atualizarCategoriaSchema),
   categoryController.atualizar
 );

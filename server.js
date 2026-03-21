@@ -2,6 +2,7 @@ require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // Importar conexão do banco de dados
 const { connectDB } = require('./config/database');
@@ -9,6 +10,7 @@ const { connectDB } = require('./config/database');
 // Importar middlewares
 const errorHandler = require('./middleware/errorHandler');
 const RateLimiter = require('./middleware/rateLimiter');
+const { uploadDir } = require('./middleware/uploadMiddleware');
 
 // Importar rotas
 const healthRoutes = require('./routes/healthRoutes');
@@ -50,6 +52,11 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
+// ========================
+// SERVIR IMAGENS ESTÁTICAS
+// ========================
+app.use('/images', express.static(uploadDir));
 
 // Conectar ao MongoDB
 connectDB();

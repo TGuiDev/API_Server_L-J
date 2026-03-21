@@ -43,10 +43,16 @@ const criar = async (req, res) => {
     throw new ConflictError('Categoria com este nome já existe');
   }
 
+  // Se arquivo foi enviado, usar path; caso contrário, usar icone de URL
+  let iconeData = icone;
+  if (req.file) {
+    iconeData = req.file.imagePath; // /images/filename
+  }
+
   const categoria = await Category.create({
     nome,
     descricao,
-    icone,
+    icone: iconeData,
     subcategorias: subcategorias || [],
   });
 
@@ -73,12 +79,18 @@ const atualizar = async (req, res) => {
     }
   }
 
+  // Se arquivo foi enviado, usar path; caso contrário, usar icone fornecido
+  let iconeAtualizado = icone;
+  if (req.file) {
+    iconeAtualizado = req.file.imagePath; // /images/filename
+  }
+
   const categoria = await Category.findByIdAndUpdate(
     id,
     {
       nome,
       descricao,
-      icone,
+      icone: iconeAtualizado,
       subcategorias,
       atualizadoEm: new Date(),
     },

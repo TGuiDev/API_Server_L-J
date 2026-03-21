@@ -3,6 +3,7 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const validateRequest = require('../middleware/validateRequest');
 const authenticate = require('../middleware/authMiddleware');
+const { upload, processImagePath } = require('../middleware/uploadMiddleware');
 const Joi = require('joi');
 
 // Schema de validação - Criar produto
@@ -10,7 +11,7 @@ const criarProdutoSchema = Joi.object({
   nome: Joi.string().min(3).required(),
   descricao: Joi.string().min(10).required(),
   preco: Joi.number().positive().required(),
-  imagem: Joi.string().uri().required(),
+  imagem: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
   categoria: Joi.string().required(),
   subcategoria: Joi.string(),
   ingredientes: Joi.array().items(
@@ -37,7 +38,7 @@ const atualizarProdutoSchema = Joi.object({
   nome: Joi.string().min(3),
   descricao: Joi.string().min(10),
   preco: Joi.number().positive(),
-  imagem: Joi.string().uri(),
+  imagem: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
   categoria: Joi.string(),
   subcategoria: Joi.string(),
   ingredientes: Joi.array().items(
@@ -85,6 +86,8 @@ router.post(
   '/',
   authenticate,
   adminOnly,
+  upload.single('imagem'),
+  processImagePath,
   validateRequest(criarProdutoSchema),
   productController.criar
 );
@@ -93,6 +96,8 @@ router.put(
   '/:id',
   authenticate,
   adminOnly,
+  upload.single('imagem'),
+  processImagePath,
   validateRequest(atualizarProdutoSchema),
   productController.atualizar
 );
