@@ -105,17 +105,21 @@ const criar = async (req, res) => {
     throw new NotFoundError('Categoria não encontrada');
   }
 
-  // Se arquivo foi enviado, usar path; caso contrário, usar imagem de URL
-  let imagemData = imagem;
-  if (req.file) {
-    imagemData = req.file.imagePath; // /images/filename
+  // Se arquivos foram enviados, coletar paths; caso contrário, usar imagem(s) de URL
+  let imagensData = [];
+  // Apenas aceitar imagens via upload de arquivos
+  if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+    imagensData = req.files.map((f) => f.imagePath);
+  } else {
+    // Não permitir imagens por URL no body
+    throw new ValidationError('Envie de 1 a 5 imagens como arquivos (multipart/form-data)');
   }
 
   const produto = await Product.create({
     nome,
     descricao,
     preco,
-    imagem: imagemData,
+    imagens: imagensData,
     categoria,
     subcategoria,
     ingredientes,
@@ -145,8 +149,9 @@ const atualizar = async (req, res) => {
   }
 
   // Se arquivo foi enviado, usar path
-  if (req.file) {
-    atualizacoes.imagem = req.file.imagePath;
+  if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+    // substituir imagens existentes pelas enviadas
+    atualizacoes.imagens = req.files.map((f) => f.imagePath);
   }
 
   const produto = await Product.findByIdAndUpdate(

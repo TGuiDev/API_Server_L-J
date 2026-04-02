@@ -17,8 +17,8 @@ const storage = multer.diskStorage({
     // Gerar nome único: timestamp + extensão original
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext);
-    cb(null, `${name}-${uniqueSuffix}${ext}`);
+    // const name = path.basename(file.originalname, ext);
+    cb(null, `image-${uniqueSuffix}${ext}`);
   },
 });
 
@@ -44,13 +44,18 @@ const upload = multer({
 
 // Middleware para processar caminho da imagem
 const processImagePath = (req, res, next) => {
-  if (!req.file) {
-    return next();
-  }
-
   try {
-    // Salvar apenas o nome do arquivo (será servido via /images/:filename)
-    req.file.imagePath = `/images/${req.file.filename}`;
+    // suporte para single file (req.file) e múltiplos (req.files)
+    if (req.file) {
+      req.file.imagePath = `/images/${req.file.filename}`;
+    }
+
+    if (req.files && Array.isArray(req.files)) {
+      req.files.forEach((f) => {
+        if (f && f.filename) f.imagePath = `/images/${f.filename}`;
+      });
+    }
+
     next();
   } catch (error) {
     res.status(400).json({

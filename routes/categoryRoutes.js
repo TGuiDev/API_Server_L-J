@@ -10,12 +10,12 @@ const Joi = require('joi');
 const criarCategoriaSchema = Joi.object({
   nome: Joi.string().min(3).required(),
   descricao: Joi.string(),
-  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
+  icone: Joi.string().optional(), // URL ou caminho opcional (se não enviar arquivo)
   subcategorias: Joi.array().items(
     Joi.object({
       nome: Joi.string().required(),
       descricao: Joi.string(),
-      icone: Joi.string().uri().optional(), // URL opcional
+      icone: Joi.string().optional(), // URL ou caminho opcional
     })
   ),
 });
@@ -24,12 +24,12 @@ const criarCategoriaSchema = Joi.object({
 const atualizarCategoriaSchema = Joi.object({
   nome: Joi.string().min(3),
   descricao: Joi.string(),
-  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
+  icone: Joi.string().optional(), // URL ou caminho opcional (se não enviar arquivo)
   subcategorias: Joi.array().items(
     Joi.object({
       nome: Joi.string().required(),
       descricao: Joi.string(),
-      icone: Joi.string().uri().optional(), // URL opcional
+      icone: Joi.string().optional(), // URL ou caminho opcional
     })
   ),
 }).min(1);
@@ -38,7 +38,7 @@ const atualizarCategoriaSchema = Joi.object({
 const adicionarSubcategoriaSchema = Joi.object({
   nome: Joi.string().min(3).required(),
   descricao: Joi.string(),
-  icone: Joi.string().uri().optional(), // URL opcional (se não enviar arquivo)
+  icone: Joi.string().optional(), // URL ou caminho opcional (se não enviar arquivo)
 });
 
 // Rotas públicas
@@ -84,6 +84,30 @@ router.post(
   adminOnly,
   validateRequest(adicionarSubcategoriaSchema),
   categoryController.adicionarSubcategoria
+);
+
+// Upload de imagem para categoria/subcategoria (retorna caminho da imagem)
+router.post(
+  '/upload-imagem',
+  authenticate,
+  adminOnly,
+  upload.single('imagem'),
+  processImagePath,
+  (req, res) => {
+    if (!req.file || !req.file.imagePath) {
+      return res.status(400).json({
+        success: false,
+        message: 'Imagem não encontrada no upload',
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        imagePath: req.file.imagePath,
+      },
+    });
+  }
 );
 
 router.delete(

@@ -37,9 +37,22 @@ const obterPorId = async (req, res) => {
 const atualizarPerfil = async (req, res) => {
   const { nome, telefone } = req.body;
 
+  // Construir objeto de update — não permitimos atualizar `nascimento` aqui
+  const updateData = {
+    atualizadoEm: new Date(),
+  };
+
+  if (typeof nome !== 'undefined') updateData.nome = nome;
+  if (typeof telefone !== 'undefined') updateData.telefone = telefone;
+
+  // Se a imagem foi enviada via multipart (uploadMiddleware), gravar o caminho
+  if (req.file && req.file.imagePath) {
+    updateData.foto = req.file.imagePath;
+  }
+
   const usuario = await User.findByIdAndUpdate(
     req.user.id,
-    { nome, telefone, atualizadoEm: new Date() },
+    updateData,
     { new: true, runValidators: true }
   ).select('-senha');
 

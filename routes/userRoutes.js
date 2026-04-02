@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const validateRequest = require('../middleware/validateRequest');
 const authenticate = require('../middleware/authMiddleware');
 const Joi = require('joi');
+const { upload, processImagePath } = require('../middleware/uploadMiddleware');
 
 // Schema de validação - Atualizar perfil
 const atualizarPerfilSchema = Joi.object({
@@ -50,6 +51,8 @@ router.get('/:id', userController.obterPorId);
 router.put(
   '/perfil/atualizar',
   authenticate,
+  upload.single('imagem'),
+  processImagePath,
   validateRequest(atualizarPerfilSchema),
   userController.atualizarPerfil
 );

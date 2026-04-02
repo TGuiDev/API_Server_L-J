@@ -41,7 +41,7 @@ Product
 ├── nome (string) - Nome do produto
 ├── descricao (string) - Descrição detalhada
 ├── preco (number) - Preço em reais
-├── imagem (string) - URL da imagem
+├── imagens (array[string]) - Lista com 1..5 caminhos/URLs das imagens (servidas via /images/*)
 ├── categoria (ObjectId) - Referência a Category
 ├── subcategoria (string) - Nome da subcategoria
 ├── ingredientes (array)
@@ -51,12 +51,12 @@ Product
 ├── estoque (number) - Quantidade em estoque
 ├── diasDisponiveis (object)
 │   ├── segunda: boolean
-│   ├── terca: boolean
-│   ├── quarta: boolean
-│   ├── quinta: boolean
-│   ├── sexta: boolean
-│   ├── sabado: boolean
-│   └── domingo: boolean
+  ├── terca: boolean
+  ├── quarta: boolean
+  ├── quinta: boolean
+  ├── sexta: boolean
+  ├── sabado: boolean
+  └── domingo: boolean
 ├── avaliacoes (array) - Referência a Review
 ├── mediaAvaliacoes (number) - 0 a 5
 ├── totalAvaliacoes (number)
@@ -92,6 +92,26 @@ Category
   ]
 }
 ```
+
+### 4. **Banner** (Banner / Promoção exibida no app)
+
+Os banners exibidos na tela inicial são gerenciados separadamente. Cada banner contém:
+
+```
+Banner
+├── title (string) - Título opcional (não exibido no app por padrão)
+├── imagePath (string) - Caminho do arquivo no servidor (ex: /images/banner-1.png)
+├── actionType (string) - 'none' | 'url' | 'produto' | 'categoria' | 'subcategoria' | 'promocao'
+├── actionTarget (string) - URL ou id do recurso alvo (dependendo de actionType)
+├── active (boolean) - Se o banner está ativo e visível no app
+└── timestamps
+```
+
+Observações:
+- Apenas `imagePath` é mostrada no app; `title` e `actionTarget` são metadados para navegação.
+- Para `actionType: 'url'`, `actionTarget` deve conter a URL completa.
+- Para tipos como `produto`, `categoria`, `subcategoria` e `promocao`, `actionTarget` deve ser o ID correspondente que será pesquisável no admin.
+
 
 ### 4. **Order** (Pedido)
 Histórico de compras com detalhes completos.

@@ -27,12 +27,17 @@ const register = async (req, res) => {
   // Gerar token
   const token = gerarToken(usuario._id, usuario.email, usuario.role);
 
+  const expiresIn = '7d';
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
   return res.status(201).json({
     success: true,
     message: 'Usuário criado com sucesso',
     data: {
       usuario: usuario.toJSON(),
       token,
+      expiresIn,
+      expiresAt,
     },
   });
 };
@@ -67,12 +72,18 @@ const login = async (req, res) => {
   // Gerar token
   const token = gerarToken(usuario._id, usuario.email, usuario.role);
 
+  // Expiração em 7 dias (tempo de vida do token JWT)
+  const expiresIn = '7d';
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
   return res.status(200).json({
     success: true,
     message: 'Login realizado com sucesso',
     data: {
       usuario: usuario.toJSON(),
       token,
+      expiresIn,
+      expiresAt,
     },
   });
 };

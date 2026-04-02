@@ -22,6 +22,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const paymentProofRoutes = require('./routes/paymentProofRoutes');
 const storeConfigRoutes = require('./routes/storeConfigRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const aiRoutes = require('./ai/aiRoutes');
 
 // Inicializar Express
@@ -91,6 +92,9 @@ app.use('/api/comprovantes', paymentProofRoutes);
 
 // Rotas de configuração da loja
 app.use('/api/config-loja', storeConfigRoutes);
+
+// Rotas de administração (banners, promoções, cupons)
+app.use('/api/admin/settings', settingsRoutes);
 
 // Rotas de IA (preditiva e análises)
 app.use('/api/ai', aiRoutes);

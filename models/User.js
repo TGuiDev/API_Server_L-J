@@ -20,6 +20,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  foto: {
+    type: String,
+    trim: true,
+  },
+  nascimento: {
+    type: Date,
+  },
   senha: {
     type: String,
     required: [true, 'Senha é obrigatória'],
