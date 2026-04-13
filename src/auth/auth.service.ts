@@ -110,6 +110,12 @@ export class AuthService {
       const { data, error } = await this.supabaseService.signInWithEmail(email, password);
 
       if (error) {
+        // Verificar se o erro é de email não confirmado
+        if (error.message?.includes('Email not confirmed') ||
+            error.message?.includes('email_not_confirmed') ||
+            error.message?.includes('not confirmed')) {
+          throw new UnauthorizedException('EMAIL_NOT_CONFIRMED');
+        }
         throw new UnauthorizedException('Email ou senha inválidos');
       }
 
@@ -139,6 +145,89 @@ export class AuthService {
     }
   }
 
+  async resendConfirmationEmail(email: string) {
+    try {
+      console.log('[AuthService.resendConfirmationEmail] Iniciando para:', email);
+
+      const { error } = await this.supabaseService.getClient().auth.resend({
+        type: 'signup',
+        email: email,
+      });
+
+      if (error) {
+        console.error('[AuthService.resendConfirmationEmail] Erro do Supabase:', error);
+        throw new BadRequestException('Erro ao reenviar email de confirmação');
+      }
+
+      console.log('[AuthService.resendConfirmationEmail] Email reenviado com sucesso');
+      return {
+        success: true,
+        message: 'Email de confirmação reenviado. Verifique sua caixa de entrada.',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[AuthService.resendConfirmationEmail] Erro:', errorMessage);
+      throw new BadRequestException(errorMessage || 'Erro ao reenviar email de confirmação');
+    }
+  }
+
+  async resetPassword(email: string) {
+    try {
+      console.log('[AuthService.resetPassword] Iniciando para:', email);
+
+      const { error } = await this.supabaseService.getClient().auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password`,
+      });
+
+      if (error) {
+        console.error('[AuthService.resetPassword] Erro do Supabase:', error);
+        throw new BadRequestException('Erro ao enviar email de redefinição de senha');
+      }
+
+      console.log('[AuthService.resetPassword] Email de redefinição de senha enviado com sucesso');
+      return {
+        success: true,
+        message: 'Email de redefinição de senha enviado. Verifique sua caixa de entrada.',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[AuthService.resetPassword] Erro:', errorMessage);
+      throw new BadRequestException(errorMessage || 'Erro ao enviar email de redefinição de senha');
+    }
+  }
+  async updatePassword(userId: string, newPassword: string) {
+    try {
+      console.log('[AuthService.updatePassword] Iniciando para userId:', userId);
+
+      // Validar senha
+      if (newPassword.length < 8) {
+        throw new BadRequestException('Senha deve ter pelo menos 8 caracteres');
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+      if (!passwordRegex.test(newPassword)) {
+        throw new BadRequestException('Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número');
+      }
+
+      // Atualizar senha no Supabase
+      const { error } = await this.supabaseService.updateUserMetadata(userId, {}, newPassword);
+
+      if (error) {
+        console.error('[AuthService.updatePassword] Erro do Supabase:', error);
+        throw new BadRequestException('Erro ao atualizar senha');
+      }
+
+      console.log('[AuthService.updatePassword] Senha atualizada com sucesso');
+      return {
+        success: true,
+        message: 'Senha atualizada com sucesso',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[AuthService.updatePassword] Erro:', errorMessage);
+      throw new BadRequestException(errorMessage || 'Erro ao atualizar senha');
+    }
+  }
   async getProfile(userId: string) {
     try {
       const { data, error } = await this.supabaseService.getUserById(userId);

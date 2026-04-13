@@ -32,25 +32,45 @@ export class AuthController {
     return this.authService.signIn(signInDto);
   }
 
-  @Post('google')
-  async googleAuth(@Body() body: any) {
-    console.log('[Controller.GoogleAuth] Iniciando Google Auth');
-    console.log('[Controller.GoogleAuth] BODY INTEIRO:', body);
-
-    const idToken = body?.idToken;
-
-    console.log('[Controller.GoogleAuth] idToken length:', idToken?.length);
-
+  @Post('resend-confirmation')
+  async resendConfirmation(@Body() body: { email: string }) {
+    console.log('[ResendConfirmation] Iniciando reenvio para:', body.email);
     try {
-      const result = await this.authService.googleAuth(idToken);
-      console.log('[Controller.GoogleAuth] Sucesso:', { userId: result?.user?.id });
+      const result = await this.authService.resendConfirmationEmail(body.email);
+      console.log('[ResendConfirmation] Sucesso');
       return result;
     } catch (error) {
-      console.error('[Controller.GoogleAuth] Erro:', error instanceof Error ? error.message : error);
+      console.error('[ResendConfirmation] Erro:', error instanceof Error ? error.message : error);
       throw error;
     }
   }
 
+  @Post('reset-password')
+  async resetPassword(@Body() body: { email: string }) {
+    console.log('[ResetPassword] Iniciando redefinição para:', body.email);
+    try {
+      const result = await this.authService.resetPassword(body.email);
+      console.log('[ResetPassword] Sucesso');
+      return result;
+    } catch (error) {
+      console.error('[ResetPassword] Erro:', error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
+  @Post('update-password')
+  @UseGuards(JwtAuthGuard)
+  async updatePassword(@Body() body: { password: string }, @Req() req: any) {
+    console.log('[UpdatePassword] Iniciando atualização de senha');
+    try {
+      const userId = req.user.sub;
+      const result = await this.authService.updatePassword(userId, body.password);
+      console.log('[UpdatePassword] Sucesso');
+      return result;
+    } catch (error) {
+      console.error('[UpdatePassword] Erro:', error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: any) {
