@@ -57,6 +57,26 @@ export class AuthController {
       throw error;
     }
   }
+
+  @Post('google')
+  async googleAuth(@Body() body: any) {
+    console.log('[Controller.GoogleAuth] Iniciando Google Auth');
+    console.log('[Controller.GoogleAuth] BODY INTEIRO:', body);
+
+    const idToken = body?.idToken;
+
+    console.log('[Controller.GoogleAuth] idToken length:', idToken?.length);
+
+    try {
+      const result = await this.authService.googleAuth(idToken);
+      console.log('[Controller.GoogleAuth] Sucesso:', { userId: result?.user?.id });
+      return result;
+    } catch (error) {
+      console.error('[Controller.GoogleAuth] Erro:', error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
+
   @Post('update-password')
   @UseGuards(JwtAuthGuard)
   async updatePassword(@Body() body: { password: string }, @Req() req: any) {
