@@ -1,12 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { BannersService } from './banners.service';
-<<<<<<< HEAD
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-=======
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { AdminGuard } from '../auth/admin.guard';
->>>>>>> a48e03f6933e983aa7c7005cb799b8e93632c9a3
 
 @Controller('banners')
 export class BannersController {
