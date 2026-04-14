@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, UseGuards, Req, Query, BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { SignUpDto, SignInDto } from './dto/auth.dto';
+import { SignUpDto, SignInDto, ResendConfirmationDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -33,10 +33,10 @@ export class AuthController {
   }
 
   @Post('resend-confirmation')
-  async resendConfirmation(@Body() body: { email: string }) {
-    console.log('[ResendConfirmation] Iniciando reenvio para:', body.email);
+  async resendConfirmation(@Body() resendDto: ResendConfirmationDto) {
+    console.log('[ResendConfirmation] Iniciando reenvio para:', resendDto.email);
     try {
-      const result = await this.authService.resendConfirmationEmail(body.email);
+      const result = await this.authService.resendConfirmationEmail(resendDto.email);
       console.log('[ResendConfirmation] Sucesso');
       return result;
     } catch (error) {

@@ -33,3 +33,8 @@ export class GoogleAuthDto {
   @IsNotEmpty()
   code: string;
 }
+
+export class ResendConfirmationDto {
+  @IsEmail()
+  email: string;
+}

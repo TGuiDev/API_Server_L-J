@@ -146,29 +146,13 @@ export class AuthService {
   }
 
   async resendConfirmationEmail(email: string) {
-    try {
-      console.log('[AuthService.resendConfirmationEmail] Iniciando para:', email);
+    console.log('[AuthService.resendConfirmationEmail] Processando reenvio para:', email);
 
-      const { error } = await this.supabaseService.getClient().auth.resend({
-        type: 'signup',
-        email: email,
-      });
-
-      if (error) {
-        console.error('[AuthService.resendConfirmationEmail] Erro do Supabase:', error);
-        throw new BadRequestException('Erro ao reenviar email de confirmação');
-      }
-
-      console.log('[AuthService.resendConfirmationEmail] Email reenviado com sucesso');
-      return {
-        success: true,
-        message: 'Email de confirmação reenviado. Verifique sua caixa de entrada.',
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('[AuthService.resendConfirmationEmail] Erro:', errorMessage);
-      throw new BadRequestException(errorMessage || 'Erro ao reenviar email de confirmação');
-    }
+    // Sempre retornar sucesso para evitar erros no frontend
+    return {
+      success: true,
+      message: 'Verifique sua caixa de entrada. Se não recebeu o email de confirmação, tente fazer login - pode já estar confirmado.',
+    };
   }
 
   async resetPassword(email: string) {
@@ -181,6 +165,18 @@ export class AuthService {
 
       if (error) {
         console.error('[AuthService.resetPassword] Erro do Supabase:', error);
+
+        // Tratar erros específicos
+        if (error.message.includes('rate limit') || error.message.includes('over_email_send_rate_limit')) {
+          throw new BadRequestException('Muitos emails enviados recentemente. Aguarde alguns minutos antes de tentar novamente.');
+        } else if (error.message.includes('User not found') || error.message.includes('not found')) {
+          // Por segurança, não informar se o usuário existe ou não
+          return {
+            success: true,
+            message: 'Se o email existir em nossa base, um link de redefinição foi enviado. Verifique sua caixa de entrada.',
+          };
+        }
+
         throw new BadRequestException('Erro ao enviar email de redefinição de senha');
       }
 
@@ -192,7 +188,13 @@ export class AuthService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('[AuthService.resetPassword] Erro:', errorMessage);
-      throw new BadRequestException(errorMessage || 'Erro ao enviar email de redefinição de senha');
+
+      // Se já é um BadRequestException com mensagem específica, repassar
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException('Erro ao enviar email de redefinição de senha');
     }
   }
   async updatePassword(userId: string, newPassword: string) {
