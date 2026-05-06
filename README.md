@@ -1,83 +1,81 @@
-# 🍽️ API Server L&J
+# Auth API - NestJS + Supabase
 
-API RESTful completa para plataforma de delivery de restaurante, com **70+ endpoints**, autenticação JWT, IA preditiva e gerenciamento de pedidos.
+API de autenticação com suporte a Email/Senha e Google OAuth.
 
-## 🚀 Quick Start
+## Instalação
 
-### 1. Instalar Dependências
 ```bash
 npm install
 ```
 
-### 2. Configurar Variáveis de Ambiente
+## Configuração
+
+1. Configure as variáveis de ambiente no arquivo `.env`:
+
+```env
+SUPABASE_URL=seu-url-do-supabase
+SUPABASE_ANON_KEY=sua-chave-anonima
+SUPABASE_SERVICE_ROLE_KEY=sua-chave-de-servico
+
+JWT_SECRET=sua-chave-secreta-jwt
+JWT_EXPIRATION=7d
+
+GOOGLE_CLIENT_ID=seu-google-client-id
+GOOGLE_CLIENT_SECRET=seu-google-client-secret
+GOOGLE_REDIRECT_URL=http://localhost:3000/auth/google/callback
+```
+
+2. Instale as dependências:
+
 ```bash
-cp .env.example .env
-# Edite .env com suas configurações
+npm install
 ```
 
-### 3. Iniciar Servidor
+## Executar
+
 ```bash
-npm run dev      # Desenvolvimento (com reload)
-npm start        # Produção
+# Desenvolvimento
+npm run start:dev
+
+# Produção
+npm run start:prod
 ```
 
-Servidor em `http://localhost:5000`
+A API estará disponível em `http://localhost:3000`
 
-## 📚 Documentação Completa
+## Rotas Disponíveis
 
-**Toda a documentação está em [`docs/`](./docs/)**
+### Autenticação
 
-| Documento | Descrição |
-|-----------|-----------|
-| [**INICIAR.md**](./docs/INICIAR.md) | Setup completo + troubleshooting |
-| [**AUTENTICACAO.md**](./docs/AUTENTICACAO.md) | JWT, Bearer Token, login/registro |
-| [**ROUTES.md**](./docs/ROUTES.md) | Todos os 70+ endpoints |
-| [**SCHEMAS.md**](./docs/SCHEMAS.md) | Estrutura de dados (7 modelos) |
-| [**IA_SETUP.md**](./docs/IA_SETUP.md) | Configuração Ollama + Gemini |
-| [**CURL_EJEMPLOS.md**](./docs/CURL_EJEMPLOS.md) | Exemplos prontos para testar |
-| [**NAVEGACAO.md**](./docs/NAVEGACAO.md) | Como encontrar tudo |
-| [**INDICES.md**](./docs/INDICES.md) | Índice completo |
+- `POST /auth/signup` - Registrar novo usuário
+- `POST /auth/signin` - Fazer login
+- `GET /auth/google` - Autenticar com Google
+- `GET /auth/profile` - Obter perfil (requer token)
+- `POST /auth/profile/update` - Atualizar perfil (requer token)
 
-## 📋 Stack
+### Usuários
 
-- **Node.js** + **Express.js 4.18.2**
-- **MongoDB** + **Mongoose 7.0.0**
-- **JWT** (jsonwebtoken 9.0.0)
-- **Joi** (validação 17.9.2)
-- **IA**: Ollama (local) + Google Gemini (fallback)
-- **Dev**: Nodemon
+- `GET /users/me` - Obter informações do usuário logado
+- `DELETE /users/me` - Deletar conta
 
-## ✨ Funcionalidades
-
-- ✅ **70+ endpoints** REST completos
-- ✅ **Autenticação JWT** + Bearer Token
-- ✅ **Gestão de usuários, produtos, pedidos**
-- ✅ **Sistema de avaliações** e reviews
-- ✅ **Pagamentos** (Pix, Cartão)
-- ✅ **IA Preditiva** (sentimento, recomendações, fraude, churn)
-- ✅ **Validação automática** + tratamento de erros centralizado
-
-## 📁 Estrutura
+## Estrutura do Projeto
 
 ```
-├── ai/              # Serviços de IA (Ollama, Gemini)
-├── config/          # Configurações (DB, JWT, erros)
-├── controllers/     # Lógica de negócio (9 arquivos)
-├── middleware/      # Auth, validação, erros
-├── models/          # MongoDB schemas (7 modelos)
-├── routes/          # Endpoints (10 arquivos)
-├── docs/            # Documentação completa
-└── server.js        # Entrada da aplicação
+src/
+├── auth/
+│   ├── dto/
+│   ├── guards/
+│   ├── strategies/
+│   ├── auth.controller.ts
+│   ├── auth.service.ts
+│   └── auth.module.ts
+├── users/
+│   ├── users.controller.ts
+│   ├── users.service.ts
+│   └── users.module.ts
+├── supabase/
+│   ├── supabase.service.ts
+│   └── supabase.module.ts
+├── app.module.ts
+└── main.ts
 ```
-
-## 📞 Precisa de Ajuda?
-
-1. **Primeiros passos?** → [INICIAR.md](./docs/INICIAR.md)
-2. **Como fazer login?** → [AUTENTICACAO.md](./docs/AUTENTICACAO.md)
-3. **Quais endpoints existem?** → [ROUTES.md](./docs/ROUTES.md)
-4. **Exemplos prontos?** → [CURL_EJEMPLOS.md](./docs/CURL_EJEMPLOS.md)
-5. **Procurando algo?** → [NAVEGACAO.md](./docs/NAVEGACAO.md)
-
----
-
-**Versão**: 1.0.0 | **Status**: ✅ Completo | **Última atualização**: Março 2026
