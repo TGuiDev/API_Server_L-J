@@ -10,7 +10,7 @@ export class ProductsService {
     const { data, error } = await client
       .from('products')
       .select(
-        `id, name, description, price, images, category_id, subcategory_id, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)`
+        `id, name, description, price, images, category_id, subcategory_id, available_days, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)`
       );
     if (error) throw new BadRequestException(error.message);
     return data;
@@ -21,7 +21,7 @@ export class ProductsService {
     const { data, error } = await client
       .from('products')
       .select(
-        `id, name, description, price, images, category_id, subcategory_id, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)`
+        `id, name, description, price, images, category_id, subcategory_id, available_days, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)`
       )
       .eq('category_id', categoryId);
     if (error) throw new BadRequestException(error.message);
