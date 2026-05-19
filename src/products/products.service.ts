@@ -6,7 +6,7 @@ export class ProductsService {
   constructor(private supabase: SupabaseService) {}
 
   private readonly productSelect =
-    'id, name, description, price, images, category_id, subcategory_id, available_days, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)';
+    'id, name, description, ingredients, price, cost_price, images, category_id, subcategory_id, available_days, stock_quantity, created_at, category:categories(id, name), subcategory:subcategories(id, name)';
 
   async getProducts() {
     const client = this.supabase.getClient();
